@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TypeWave</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#/">⌨ TypeWave</a>
+    <label class="theme-picker">
+      Theme
+      <select id="theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+        <option value="neon">Neon</option>
+      </select>
+    </label>
+  </header>
+
+  <!-- The whole app is drawn inside this element by app.js -->
+  <main id="app"></main>
+
+  <!--
+    Content files. Each one adds a language to window.CONTENT.
+    To add a language: create content/xx.js and add one more <script> line here.
+    (We use .js files instead of .json because browsers block fetch() of local
+    files when you double-click index.html. Later, with a server or GitHub Pages,
+    you can switch to real .json files and fetch() them.)
+  -->
+  <script src="content/en.js"></script>
+  <script src="content/it.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

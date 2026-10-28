@@ -75,28 +75,54 @@
 
   // ---------------------------------------------------------------
   // Sound: tiny beeps made by the browser itself (no audio files needed).
-  // Right key = short high click. Wrong key = lower, longer buzz.
+  // Right key = short light click. Wrong key = lower, heavier thud.
   // Sound can be switched on/off with the button in the top bar.
   //
   // Later you can use real recorded sounds instead: replace the body of
   // playSound with  new Audio('sounds/' + (ok ? 'right' : 'wrong') + '.mp3').play();
   // ---------------------------------------------------------------
   let audioCtx = null;
+  let noiseBuffer = null;
   function playSound(ok) {
     if (!store.get('sound', true)) return;
     try {
       audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = ok ? 'square' : 'sawtooth';
-      osc.frequency.value = ok ? 900 : 180;       // pitch: change these two numbers
       const t = audioCtx.currentTime;
-      gain.gain.setValueAtTime(0.06, t);          // volume: lower = quieter
-      gain.gain.exponentialRampToValueAtTime(0.001, t + (ok ? 0.04 : 0.15));
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+
+      // 1) The "click": a very short burst of noise, filtered so it sounds like plastic.
+      if (!noiseBuffer) {
+        noiseBuffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.1), audioCtx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = noiseBuffer;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      // Random variation (+-10%) so the sound is never exactly the same twice.
+      filter.frequency.value = (ok ? 2400 : 800) * (0.9 + Math.random() * 0.2);
+      filter.Q.value = 1.1;
+      const clickGain = audioCtx.createGain();
+      clickGain.gain.setValueAtTime(ok ? 0.45 : 0.5, t);          // volume of the click
+      clickGain.gain.exponentialRampToValueAtTime(0.001, t + (ok ? 0.035 : 0.1));
+      noise.connect(filter);
+      filter.connect(clickGain);
+      clickGain.connect(audioCtx.destination);
+      noise.start(t);
+      noise.stop(t + 0.1);
+
+      // 2) The "thump": a quick low note that drops in pitch, like the key hitting the base.
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime((ok ? 170 : 110) * (0.95 + Math.random() * 0.1), t);
+      osc.frequency.exponentialRampToValueAtTime(55, t + 0.06);
+      const thumpGain = audioCtx.createGain();
+      thumpGain.gain.setValueAtTime(ok ? 0.25 : 0.35, t);         // volume of the thump
+      thumpGain.gain.exponentialRampToValueAtTime(0.001, t + (ok ? 0.06 : 0.14));
+      osc.connect(thumpGain);
+      thumpGain.connect(audioCtx.destination);
       osc.start(t);
-      osc.stop(t + 0.16);
+      osc.stop(t + 0.15);
     } catch (e) { /* no sound available: ignore */ }
   }
 

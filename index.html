@@ -9,14 +9,17 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#/">⌨ TypeWave</a>
-    <label class="theme-picker">
-      Theme
-      <select id="theme">
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
-        <option value="neon">Neon</option>
-      </select>
-    </label>
+    <div class="top-actions">
+      <button id="sound" class="btn ghost" title="Sound on/off" aria-label="Sound on/off">🔊</button>
+      <label class="theme-picker">
+        Theme
+        <select id="theme">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="neon">Neon</option>
+        </select>
+      </label>
+    </div>
   </header>
 
   <!-- The whole app is drawn inside this element by app.js -->

@@ -162,3 +162,7 @@ a.btn { display: inline-block; }
 /* Heatmap section on the level map */
 .heatmap { margin-top: 36px; }
 .heatmap h2 { margin: 0 0 4px; }
+
+/* Top bar: sound button + theme picker */
+.top-actions { display: flex; align-items: center; gap: 12px; }
+.top-actions .btn { padding: 4px 10px; }

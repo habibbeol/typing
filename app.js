@@ -74,6 +74,33 @@
   }
 
   // ---------------------------------------------------------------
+  // Sound: tiny beeps made by the browser itself (no audio files needed).
+  // Right key = short high click. Wrong key = lower, longer buzz.
+  // Sound can be switched on/off with the button in the top bar.
+  //
+  // Later you can use real recorded sounds instead: replace the body of
+  // playSound with  new Audio('sounds/' + (ok ? 'right' : 'wrong') + '.mp3').play();
+  // ---------------------------------------------------------------
+  let audioCtx = null;
+  function playSound(ok) {
+    if (!store.get('sound', true)) return;
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = ok ? 'square' : 'sawtooth';
+      osc.frequency.value = ok ? 900 : 180;       // pitch: change these two numbers
+      const t = audioCtx.currentTime;
+      gain.gain.setValueAtTime(0.06, t);          // volume: lower = quieter
+      gain.gain.exponentialRampToValueAtTime(0.001, t + (ok ? 0.04 : 0.15));
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.16);
+    } catch (e) { /* no sound available: ignore */ }
+  }
+
+  // ---------------------------------------------------------------
   // 2. Language
   // Order of priority: the language the person chose before,
   // then the browser language, then English.
@@ -421,6 +448,7 @@
       if (!ok) errors++;
       states[pos] = ok ? 'correct' : 'wrong';
       keyboard.flash(e.key, ok);
+      playSound(ok);
 
       pos++;
       paint(pos - 1);
@@ -478,6 +506,16 @@
     document.documentElement.dataset.theme = themeSelect.value;
     store.set('theme', themeSelect.value);
   });
+
+  // Sound on/off button
+  const soundBtn = document.getElementById('sound');
+  const showSound = () => { soundBtn.textContent = store.get('sound', true) ? '🔊' : '🔇'; };
+  soundBtn.addEventListener('click', () => {
+    store.set('sound', !store.get('sound', true));
+    showSound();
+    soundBtn.blur();   // so that Space/Enter keep going to the typing screen
+  });
+  showSound();
 
   route();
 })();
